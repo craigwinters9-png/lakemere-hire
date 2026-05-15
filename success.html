@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Confirmed | Lake Mere Hire</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --forest: #2c4a3e; --gold: #b8935a; --cream: #f7f3ed; --white: #fdfcfa; --sand: #e8dfd0; }
+  body { font-family: 'Jost', sans-serif; background: var(--cream); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+  .card { background: var(--white); max-width: 560px; width: 100%; padding: 4rem 3rem; text-align: center; border-top: 4px solid var(--gold); box-shadow: 0 20px 60px rgba(44,74,62,0.1); animation: pop 0.7s cubic-bezier(.175,.885,.32,1.275) both; }
+  .icon { font-size: 3rem; margin-bottom: 1.5rem; display: block; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; color: var(--forest); margin-bottom: 0.8rem; }
+  p { font-size: 0.92rem; color: #4a5e55; line-height: 1.85; font-weight: 300; margin-bottom: 0.5rem; }
+  hr { border: none; border-top: 1px solid var(--sand); margin: 1.8rem 0; }
+  .row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0.5rem 0; border-bottom: 1px solid var(--sand); }
+  .row .lbl { color: #999; }
+  .back { display: inline-block; margin-top: 2.5rem; background: var(--forest); color: var(--white); padding: 0.9rem 2.5rem; text-decoration: none; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; transition: background 0.2s; }
+  .back:hover { background: var(--gold); }
+  @keyframes pop { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="icon">🏡</span>
+  <h1>Booking Confirmed!</h1>
+  <p>Thank you for booking Lake Mere Hire. We can't wait to welcome you!</p>
+  <p>A confirmation email has been sent with all your stay details.</p>
+  <hr>
+  <div class="row"><span class="lbl">Status</span><span>✅ Payment successful</span></div>
+  <div class="row"><span class="lbl">Reference</span><span id="ref">Loading…</span></div>
+  <p style="margin-top:1.5rem;font-size:0.82rem;color:#aaa">Questions? Reply to your confirmation email or visit lakemerehire.co.uk</p>
+  <a href="/" class="back">← Back to Homepage</a>
+</div>
+<script>
+  const sid = new URLSearchParams(window.location.search).get('session_id');
+  document.getElementById('ref').textContent = sid ? sid.slice(0,20) + '…' : '—';
+</script>
+</body>
+</html>
