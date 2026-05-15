@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lake Mere — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --forest: #2c4a3e; --moss: #4a7c6a; --gold: #b8935a; --cream: #f7f3ed; --sand: #e8dfd0; --white: #fdfcfa; }
+  body { font-family: 'Jost', sans-serif; background: var(--cream); min-height: 100vh; }
+
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .login-card { background: var(--white); padding: 3rem; width: 100%; max-width: 400px; border-top: 4px solid var(--gold); }
+  .login-card h1 { font-family: 'Cormorant Garamond', serif; font-size: 2rem; color: var(--forest); margin-bottom: 0.5rem; }
+  .login-card p { font-size: 0.85rem; color: #888; margin-bottom: 2rem; }
+  label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--moss); display: block; margin-bottom: 0.4rem; }
+  input[type=password] { width: 100%; background: var(--cream); border: 1.5px solid var(--sand); padding: 0.8rem 1rem; font-family: 'Jost', sans-serif; font-size: 0.9rem; outline: none; margin-bottom: 1.2rem; }
+  .login-btn { width: 100%; background: var(--forest); color: var(--white); border: none; padding: 0.9rem; font-family: 'Jost', sans-serif; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
+  .login-btn:hover { background: var(--moss); }
+  .login-err { color: #c0392b; font-size: 0.82rem; margin-top: 0.8rem; display: none; }
+
+  .admin-wrap { display: none; }
+  .admin-header { background: var(--forest); padding: 1.2rem 3rem; display: flex; justify-content: space-between; align-items: center; }
+  .admin-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--white); }
+  .logout-btn { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); padding: 0.4rem 1rem; font-family: 'Jost', sans-serif; font-size: 0.75rem; cursor: pointer; letter-spacing: 0.08em; text-transform: uppercase; }
+  .logout-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .admin-body { max-width: 1000px; margin: 3rem auto; padding: 0 2rem; }
+  .admin-grid { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
+
+  .cal-wrap { background: var(--white); padding: 2rem; }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .cal-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--forest); }
+  .cal-nav button { background: var(--cream); border: 1px solid var(--sand); padding: 0.4rem 0.8rem; cursor: pointer; font-family: 'Jost', sans-serif; font-size: 0.8rem; margin-left: 0.4rem; }
+  .cal-nav button:hover { background: var(--forest); color: var(--white); border-color: var(--forest); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-day-name { text-align: center; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--moss); padding: 0.5rem 0; }
+  .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; cursor: pointer; border-radius: 2px; transition: all 0.15s; border: 1px solid transparent; user-select: none; }
+  .cal-day:hover:not(.empty):not(.past) { background: var(--sand); }
+  .cal-day.empty { cursor: default; }
+  .cal-day.past { color: #ccc; cursor: default; }
+  .cal-day.blocked { background: var(--forest); color: var(--white); }
+  .cal-day.blocked:hover { background: #c0392b; }
+  .cal-day.today { border-color: var(--gold); font-weight: 600; }
+
+  .save-section { background: var(--forest); color: var(--white); padding: 2rem; margin-top: 1rem; }
+  .save-section h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; margin-bottom: 1rem; }
+  .save-steps { font-size: 0.82rem; line-height: 1.9; opacity: 0.85; margin-bottom: 1.2rem; }
+  .save-steps ol { padding-left: 1.2rem; }
+  .json-output { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); padding: 1rem; font-family: monospace; font-size: 0.78rem; color: var(--cream); min-height: 70px; resize: vertical; margin-bottom: 1rem; }
+  .copy-btn { background: var(--gold); color: var(--white); border: none; padding: 0.8rem 1.8rem; font-family: 'Jost', sans-serif; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .copy-btn:hover { background: #a07840; }
+  .copied-msg { font-size: 0.82rem; color: var(--gold); margin-left: 1rem; display: none; }
+
+  .sidebar-card { background: var(--white); padding: 1.5rem; margin-bottom: 1rem; }
+  .sidebar-card h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--forest); margin-bottom: 0.8rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--sand); }
+  .legend-item { display: flex; align-items: center; gap: 0.8rem; font-size: 0.82rem; color: #555; margin-bottom: 0.5rem; }
+  .legend-dot { width: 1rem; height: 1rem; border-radius: 2px; flex-shrink: 0; }
+  .blocked-list { max-height: 220px; overflow-y: auto; }
+  .blocked-item { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid var(--sand); font-size: 0.8rem; }
+  .unblock-btn { background: none; border: none; color: #c0392b; cursor: pointer; font-size: 0.72rem; text-transform: uppercase; }
+  .no-blocked { font-size: 0.82rem; color: #aaa; font-style: italic; }
+
+  @media (max-width: 700px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .admin-header { padding: 1rem 1.5rem; }
+    .admin-body { padding: 0 1rem; margin: 1.5rem auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h1>Lake Mere</h1>
+    <p>Admin — Availability Manager</p>
+    <label>Password</label>
+    <input type="password" id="pwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Sign In</button>
+    <div class="login-err" id="loginErr">Incorrect password.</div>
+  </div>
+</div>
+
+<div class="admin-wrap" id="adminWrap">
+  <div class="admin-header">
+    <h1>Lake Mere — Availability Manager</h1>
+    <button class="logout-btn" onclick="logout()">Sign Out</button>
+  </div>
+
+  <div class="admin-body">
+    <div class="admin-grid">
+      <div>
+        <div class="cal-wrap">
+          <div class="cal-header">
+            <h2 id="calTitle"></h2>
+            <div class="cal-nav">
+              <button onclick="changeMonth(-1)">← Prev</button>
+              <button onclick="changeMonth(1)">Next →</button>
+            </div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div class="save-section">
+          <h3>💾 Save Your Changes</h3>
+          <div class="save-steps">
+            <ol>
+              <li>Click <strong>Copy JSON</strong> below</li>
+              <li>Open <strong>github.com/craigwinters9-png/lakemere-hire</strong></li>
+              <li>Click <strong>blocked-dates.json</strong> → pencil icon to edit</li>
+              <li>Select all → paste → click <strong>Commit changes</strong></li>
+            </ol>
+            The booking page updates within 30 seconds!
+          </div>
+          <textarea class="json-output" id="jsonOutput" readonly></textarea>
+          <button class="copy-btn" onclick="copyJSON()">Copy JSON</button>
+          <span class="copied-msg" id="copiedMsg">✓ Copied to clipboard!</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-card">
+          <h3>Legend</h3>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--white);border:1px solid var(--sand)"></div> Available</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--forest)"></div> Blocked / Booked</div>
+          <div class="legend-item"><div class="legend-dot" style="border:2px solid var(--gold)"></div> Today</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#eee"></div> Past date</div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Blocked Dates</h3>
+          <div class="blocked-list" id="blockedList">
+            <p class="no-blocked">No dates blocked yet.</p>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>Tip</h3>
+          <p style="font-size:0.8rem;color:#666;line-height:1.7">Block the nights of a stay. Changeover days (e.g. Friday) can be shared — guests can still use them as check-in or check-out dates.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const PASS = 'L4k3mere!!2026';
+  let blockedDates = new Set();
+  let currentYear, currentMonth;
+
+  function login() {
+    if (document.getElementById('pwInput').value === PASS) {
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('adminWrap').style.display = 'block';
+      const now = new Date();
+      currentYear = now.getFullYear();
+      currentMonth = now.getMonth();
+      loadFromFile();
+    } else {
+      document.getElementById('loginErr').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('adminWrap').style.display = 'none';
+    document.getElementById('pwInput').value = '';
+  }
+
+  async function loadFromFile() {
+    try {
+      const res = await fetch('/blocked-dates.json?nocache=' + Date.now());
+      const data = await res.json();
+      blockedDates = new Set(Array.isArray(data) ? data : []);
+    } catch(e) {
+      blockedDates = new Set();
+    }
+    renderCalendar();
+    updateBlockedList();
+    updateJSON();
+  }
+
+  function toggleDate(dateStr, el) {
+    if (el.classList.contains('past') || el.classList.contains('empty')) return;
+    if (blockedDates.has(dateStr)) {
+      blockedDates.delete(dateStr);
+      el.classList.remove('blocked');
+    } else {
+      blockedDates.add(dateStr);
+      el.classList.add('blocked');
+    }
+    updateBlockedList();
+    updateJSON();
+  }
+
+  function updateJSON() {
+    const sorted = [...blockedDates].sort();
+    document.getElementById('jsonOutput').value = JSON.stringify(sorted, null, 2);
+  }
+
+  function copyJSON() {
+    const text = document.getElementById('jsonOutput').value;
+    navigator.clipboard.writeText(text).then(() => {
+      const msg = document.getElementById('copiedMsg');
+      msg.style.display = 'inline';
+      setTimeout(() => msg.style.display = 'none', 3000);
+    });
+  }
+
+  function updateBlockedList() {
+    const list = document.getElementById('blockedList');
+    const sorted = [...blockedDates].sort();
+    if (sorted.length === 0) {
+      list.innerHTML = '<p class="no-blocked">No dates blocked yet.</p>';
+      return;
+    }
+    list.innerHTML = sorted.map(d => `
+      <div class="blocked-item">
+        <span>${formatDate(d)}</span>
+        <button class="unblock-btn" onclick="unblockDate('${d}')">Remove</button>
+      </div>
+    `).join('');
+  }
+
+  function unblockDate(dateStr) {
+    blockedDates.delete(dateStr);
+    updateBlockedList();
+    updateJSON();
+    renderCalendar();
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00');
+    return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    if (currentMonth < 0)  { currentMonth = 11; currentYear--; }
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.getElementById('calTitle').textContent = `${months[currentMonth]} ${currentYear}`;
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+    ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'cal-day-name';
+      el.textContent = d;
+      grid.appendChild(el);
+    });
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const offset = firstDay === 0 ? 6 : firstDay - 1;
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date(); today.setHours(0,0,0,0);
+    for (let i = 0; i < offset; i++) {
+      const el = document.createElement('div');
+      el.className = 'cal-day empty';
+      grid.appendChild(el);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentYear, currentMonth, day);
+      const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const el = document.createElement('div');
+      el.className = 'cal-day';
+      el.textContent = day;
+      if (date < today) el.classList.add('past');
+      else if (date.toDateString() === today.toDateString()) el.classList.add('today');
+      if (blockedDates.has(dateStr)) el.classList.add('blocked');
+      el.onclick = () => toggleDate(dateStr, el);
+      grid.appendChild(el);
+    }
+  }
+</script>
+</body>
+</html>
